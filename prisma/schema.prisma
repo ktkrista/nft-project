@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models for user authentication and session management
+// Authentication models
 model Account {
   id                 String    @id @default(cuid())
   userId             String
@@ -56,9 +56,9 @@ model User {
   ethereumAddress  String    @unique
   levels           String?
   createdDate      DateTime?
-  address          Int?
+  addressId        Int?
   roles            String?
-  Address          Address?  @relation(fields: [address], references: [addressId])
+  Address          Address?  @relation(fields: [addressId], references: [addressId])
   Wallet           Wallet[]
 }
 
@@ -79,7 +79,7 @@ model Address {
   city        String
   stateName   String
   zipCode     Int
-  Users       User[] @relation(fields: [address], references: [addressId])
+  Users       User[] @relation(fields: [addressId], references: [addressId])
 }
 
 model CancellationLogs {
@@ -151,7 +151,7 @@ model Wallet {
   clientId         Int
   ethereumBalance  Decimal?       @db.Decimal(18, 8)
   fiatBalance      Decimal?       @db.Decimal(18, 8)
-  User             User           @relation(fields: [clientId], references: [clientId])
+  User             User           @relation(fields: [clientId], references: [id])
   NftOwnership     NftOwnership[]
   TransactionsBuyer Transactions[] @relation("WalletBuyer")
   TransactionsSeller Transactions[] @relation("WalletSeller")
