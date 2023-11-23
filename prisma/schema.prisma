@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Original models for user authentication and session management
 model Account {
   id                 String    @id @default(cuid())
   userId             String
@@ -48,6 +49,18 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+  // Fields from the users table in SQL schema
+  firstName        String
+  lastName         String
+  phoneNumber      String?   @db.VarChar(20)
+  cellNumber       String?   @db.VarChar(20)
+  ethereumAddress  String    @unique
+  levels           String?
+  createdDate      DateTime?
+  addressId        Int?
+  roles            String?
+  Address          Address?  @relation(fields: [addressId], references: [addressId])
+  Wallet           Wallet[]
 }
 
 model VerificationRequest {
@@ -61,3 +74,87 @@ model VerificationRequest {
   @@unique([identifier, token])
 }
 
+// Models from SQL tables
+model Address {
+  addressId   Int    @id @default(autoincrement())
+  street      String
+  city        String
+  stateName   String
+  zipCode     Int
+  User        User[]
+}
+
+model Wallet {
+  walletId          Int               @id @default(autoincrement())
+  clientId          Int
+  ethereumBalance   Float?            @db.Decimal(18, 8)
+  fiatBalance       Float?            @db.Decimal(18, 8)
+  User              User              @relation(fields: [clientId], references: [clientId])
+  NftOwnership      NftOwnership[]
+  TransactionsBuyer Transactions[]    @relation("TransactionsBuyer")
+  TransactionsSeller Transactions[]   @relation("TransactionsSeller")
+  Deposit           Deposit[]
+}
+
+model Nft {
+  tokenId       String          @id
+  smartContractAddress String
+  name          String
+  NftOwnership  NftOwnership[]
+  NftDetails    NftDetails[]
+  Transactions  Transactions[]
+}
+
+model NftOwnership {
+  ownershipId    Int     @id @default(autoincrement())
+  walletId       Int
+  tokenId        String
+  Wallet         Wallet  @relation(fields: [walletId], references: [walletId])
+  Nft            Nft     @relation(fields: [tokenId], references: [tokenId])
+}
+
+model NftDetails {
+  detailsId     Int      @id @default(autoincrement())
+  tokenId       String
+  mediaUrl      String
+  createdDate   DateTime?
+  category      String
+  description   String
+  Nft           Nft      @relation(fields: [tokenId], references: [tokenId])
+}
+
+model Transactions {
+  transactionId        Int       @id @default(autoincrement())
+  commission           Float?    @db.Decimal(18, 8)
+  currency             String?
+  buyerWalletId        Int?
+  sellerWalletId       Int?
+  transactionDate      DateTime?
+  transactionType      String?
+  transactionStatus    String?
+  tokenId              String?
+  commissionRate       Float?    @db.Decimal(18, 8)
+  transactionValueEth  Float?    @db.Decimal(18, 8)
+  marketPriceUsd       Float?    @db.Decimal(18, 8)
+  marketPriceEth       Float?    @db.Decimal(18, 8)
+  WalletBuyer          Wallet    @relation("TransactionsBuyer", fields: [buyerWalletId], references: [walletId])
+  WalletSeller         Wallet    @relation("TransactionsSeller", fields: [sellerWalletId], references: [walletId])
+  Nft                  Nft?      @relation(fields: [tokenId], references: [tokenId])
+}
+
+model Deposit {
+  depositId     Int      @id @default(autoincrement())
+  walletId      Int
+  amount        Float    @db.Decimal(18, 8)
+  paymentDate   DateTime?
+  paymentType   String?
+  status        String?
+  Wallet        Wallet   @relation(fields: [walletId], references: [walletId])
+}
+
+model CancellationLogs {
+  cancellationId   Int          @id @default(autoincrement())
+  transactionId    Int
+  cancellationTime DateTime
+  Transactions     Transactions @relation(fields: [transactionId], references: [transactionId])
+}
