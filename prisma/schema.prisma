@@ -95,62 +95,71 @@ model Nft {
   tokenId       String          @id
   smartContractAddress String
   name          String
-  NftOwnership  NftOwnership[]
-  NftDetails    NftDetails[]
-  Transactions  Transactions[]
+model Deposit {
+  depositId    Int      @id @default(autoincrement())
+  walletId     Int?
+  amount       Decimal? @db.Decimal(18, 8)
+  paymentDate  DateTime?
+  paymentType  String?
+  status       String?
+  Wallet       Wallet?  @relation(fields: [walletId], references: [walletId])
 }
 
-model NftOwnership {
-  ownershipId    Int     @id @default(autoincrement())
-  walletId       Int
-  tokenId        String
-  Wallet         Wallet  @relation(fields: [walletId], references: [walletId])
-  Nft            Nft     @relation(fields: [tokenId], references: [tokenId])
+model Nft {
+  tokenId              String         @id
+  smartContractAddress String
+  name                 String
+  NftDetails           NftDetails[]
+  NftOwnership         NftOwnership[]
+  Transactions         Transactions[]
 }
 
 model NftDetails {
-  detailsId     Int      @id @default(autoincrement())
-  tokenId       String
-  mediaUrl      String
-  createdDate   DateTime?
-  category      String
-  description   String
-  Nft           Nft      @relation(fields: [tokenId], references: [tokenId])
+  detailsId   Int      @id @default(autoincrement())
+  tokenId     String
+  mediaUrl    String
+  createdDate DateTime?
+  category    String
+  description String
+  Nft         Nft      @relation(fields: [tokenId], references: [tokenId])
+}
+
+model NftOwnership {
+  ownershipId Int    @id @default(autoincrement())
+  walletId    Int
+  tokenId     String
+  Wallet      Wallet @relation(fields: [walletId], references: [walletId])
+  Nft         Nft    @relation(fields: [tokenId], references: [tokenId])
 }
 
 model Transactions {
-  transactionId        Int       @id @default(autoincrement())
-  commission           Decimal?  @db.Decimal(18, 8)
-  currency             String?
-  buyerWalletId        Int?
-  sellerWalletId       Int?
-  transactionDate      DateTime?
-  transactionType      String?
-  transactionStatus    String?
-  tokenId              String?
-  commissionRate       Decimal?  @db.Decimal(18, 8)
-  transactionValueEth  Decimal?  @db.Decimal(18, 8)
-  marketPriceUsd       Decimal?  @db.Decimal(18, 8)
-  marketPriceEth       Decimal?  @db.Decimal(18, 8)
-  WalletBuyer          Wallet?   @relation("TransactionsBuyer", fields: [buyerWalletId], references: [walletId])
-  WalletSeller         Wallet?   @relation("TransactionsSeller", fields: [sellerWalletId], references: [walletId])
-  Nft                  Nft?      @relation(fields: [tokenId], references: [tokenId])
-  CancellationLogs     CancellationLogs[]
+  transactionId       Int      @id @default(autoincrement())
+  commission          Decimal? @db.Decimal(18, 8)
+  currency            String?
+  buyerWalletId       Int?
+  sellerWalletId      Int?
+  transactionDate     DateTime?
+  transactionType     String?
+  transactionStatus   String?
+  tokenId             String?
+  commissionRate      Decimal? @db.Decimal(18, 8)
+  transactionValueEth Decimal? @db.Decimal(18, 8)
+  marketPriceUsd      Decimal? @db.Decimal(18, 8)
+  marketPriceEth      Decimal? @db.Decimal(18, 8)
+  WalletBuyer         Wallet?  @relation("WalletBuyer", fields: [buyerWalletId], references: [walletId])
+  WalletSeller        Wallet?  @relation("WalletSeller", fields: [sellerWalletId], references: [walletId])
+  Nft                 Nft?     @relation(fields: [tokenId], references: [tokenId])
+  CancellationLogs    CancellationLogs[]
 }
 
-model Deposit {
-  depositId     Int      @id @default(autoincrement())
-  walletId      Int
-  amount        Decimal  @db.Decimal(18, 8)
-  paymentDate   DateTime?
-  paymentType   String?
-  status        String?
-  Wallet        Wallet   @relation(fields: [walletId], references: [walletId])
-}
-
-model CancellationLogs {
-  cancellationId   Int          @id @default(autoincrement())
-  transactionId    Int
-  cancellationTime DateTime
-  Transactions     Transactions? @relation(fields: [transactionId], references: [transactionId])
+model Wallet {
+  walletId         Int            @id @default(autoincrement())
+  clientId         Int
+  ethereumBalance  Decimal?       @db.Decimal(18, 8)
+  fiatBalance      Decimal?       @db.Decimal(18, 8)
+  User             User           @relation(fields: [clientId], references: [clientId])
+  NftOwnership     NftOwnership[]
+  TransactionsBuyer Transactions[] @relation("WalletBuyer")
+  TransactionsSeller Transactions[] @relation("WalletSeller")
+  Deposit          Deposit[]
 }
