@@ -86,10 +86,10 @@ model Address {
 
 model Wallet {
   walletId          Int               @id @default(autoincrement())
-  clientId          Int
+  userId            Int
   ethereumBalance   Float?            @db.Decimal(18, 8)
   fiatBalance       Float?            @db.Decimal(18, 8)
-  User              User              @relation(fields: [clientId], references: [clientId])
+  User              User              @relation(fields: [userId], references: [id])
   NftOwnership      NftOwnership[]
   TransactionsBuyer Transactions[]    @relation("TransactionsBuyer")
   TransactionsSeller Transactions[]   @relation("TransactionsSeller")
