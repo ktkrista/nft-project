@@ -135,7 +135,7 @@ model Transactions {
   WalletBuyer          Wallet?   @relation("TransactionsBuyer", fields: [buyerWalletId], references: [walletId])
   WalletSeller         Wallet?   @relation("TransactionsSeller", fields: [sellerWalletId], references: [walletId])
   Nft                  Nft?      @relation(fields: [tokenId], references: [tokenId])
-  CancellationLogs     CancellationLogs?
+  CancellationLogs     CancellationLogs[]
 }
 
 model Deposit {
