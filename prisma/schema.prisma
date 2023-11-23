@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Models for user authentication and session management
 model Account {
   id                 String    @id @default(cuid())
   userId             String
@@ -47,6 +48,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+  // Fields from your existing users table
   firstName        String
   lastName         String
   phoneNumber      String?   @db.VarChar(20)
@@ -54,9 +56,9 @@ model User {
   ethereumAddress  String    @unique
   levels           String?
   createdDate      DateTime?
-  addressId        Int?
+  address          Int?
   roles            String?
-  Address          Address?  @relation(fields: [addressId], references: [addressId])
+  Address          Address?  @relation(fields: [address], references: [addressId])
   Wallet           Wallet[]
 }
 
@@ -70,31 +72,23 @@ model VerificationRequest {
   @@unique([identifier, token])
 }
 
+// Models based on your existing database structure
 model Address {
   addressId   Int    @id @default(autoincrement())
   street      String
   city        String
   stateName   String
   zipCode     Int
-  User        User[]
+  Users       User[] @relation(fields: [address], references: [addressId])
 }
 
-model Wallet {
-  walletId          Int       @id @default(autoincrement())
-  userId            String    
-  ethereumBalance   Decimal?  @db.Decimal(18, 8)
-  fiatBalance       Decimal?  @db.Decimal(18, 8)
-  User              User      @relation(fields: [userId], references: [id])
-  NftOwnership      NftOwnership[]
-  TransactionsBuyer Transactions[]    @relation("TransactionsBuyer")
-  TransactionsSeller Transactions[]   @relation("TransactionsSeller")
-  Deposit           Deposit[]
+model CancellationLogs {
+  cancellationId   Int         @id @default(autoincrement())
+  transactionId    Int?
+  cancellationTime DateTime?
+  Transaction      Transactions? @relation(fields: [transactionId], references: [transactionId])
 }
 
-model Nft {
-  tokenId       String          @id
-  smartContractAddress String
-  name          String
 model Deposit {
   depositId    Int      @id @default(autoincrement())
   walletId     Int?
